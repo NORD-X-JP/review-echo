@@ -1,0 +1,58 @@
+{
+  "allowedTools": ["*"],
+  "bash": {
+    "deny": [
+      // 1. 破壊的コマンドの禁止
+      "rm -rf /",
+      "rm -rf /*",
+      "mkfs",
+      "dd",
+      "chmod 777",
+      "chmod -R 777",
+      "chown",
+
+      // 2. 外部ネットワーク通信・データ持ち出しの禁止
+      "curl",
+      "wget",
+      "nc",
+      "netcat",
+      "nmap",
+      "ssh",
+      "scp",
+      "sftp",
+      "ftp",
+      "telnet",
+      "ping",
+      "traceroute",
+
+      // 3. 意図しない公開・上書きの禁止
+      "npm publish",
+      "git push --force",
+
+      // 4. 特定の秘匿ファイル（.env）の読み取り禁止
+      "cat .env",
+      "cat .env.local",
+      "cat .env.development",
+      "cat .env.production",
+      "less .env",
+      "more .env",
+      "tail .env",
+      "head .env",
+      "nano .env",
+      "vim .env",
+      "vi .env",
+      "grep .env",
+      "awk .env",
+      "sed .env",
+
+      // 5. システムの環境変数一覧のダンプ（全出力）禁止
+      "printenv",
+      "env",
+      "set",
+
+      // 6. ログ隠滅・難読化の禁止
+      "history -c",
+      "> /dev/null"
+    ]
+  }
+}
