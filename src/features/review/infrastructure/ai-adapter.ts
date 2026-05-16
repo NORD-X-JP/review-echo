@@ -1,5 +1,5 @@
-import { generateText, Output } from "ai";
 import { google } from "@ai-sdk/google"; // OpenAIにする場合は '@ai-sdk/openai' に変更
+import { generateText, Output } from "ai";
 import {
   PreprocessOutputSchema,
   ReviewAnalysisOutputSchema,
@@ -8,7 +8,7 @@ import {
 // 1. 分割・翻訳を行う関数
 export async function extractAndTranslate(rawReviewText: string) {
   const { output } = await generateText({
-    model: google("gemini-1.5-flash-latest"),
+    model: google("gemini-3.1-flash-lite"),
     output: Output.object({
       schema: PreprocessOutputSchema,
     }),
@@ -25,11 +25,19 @@ export async function extractAndTranslate(rawReviewText: string) {
 // 2. 構造化分析を行う関数
 export async function analyzeReview(sentences: any[]) {
   const formattedText = sentences
-    .map((s) => `[ID: ${s.sequenceNum}] ${s.text}`)
+    .map((s) => {
+      // 翻訳文があればそれを、なければ原文を変数に入れる
+      const textToAnalyze = s.translatedText
+        ? s.translatedText
+        : s.originalText;
+      return `[ID: ${s.sequenceNum}] ${textToAnalyze}`;
+    })
     .join("\n");
 
+    console.log("[DEBUG] 分析AIに渡すテキスト:\n", formattedText);
+
   const { output } = await generateText({
-    model: google("gemini-1.5-flash-latest"), // OpenAIなら openai('gpt-4o-mini') とする
+    model: google("gemini-3.1-flash-lite"), // OpenAIなら openai('gpt-4o-mini') とする
     output: Output.object({
       schema: ReviewAnalysisOutputSchema,
     }),
@@ -37,12 +45,20 @@ export async function analyzeReview(sentences: any[]) {
       示される口コミテキストを分析し、以下のJSONスキーマに従って、主言語・副言語の特定、属性推論（国籍、性別、同行者）、トピック別分析（食事、客室、風呂、サービス、立地、その他）を行ってください。
       提供される口コミテキストは、文ごとに分割され [ID: X] というタグが付けられています。
 
-      【指示】
-      1. 指定されたJSONスキーマに従い、口コミの属性とトピックごとの感情・意図を分析してください。
-      2. 「推論（INFERRED）」を行う場合、必ず根拠となる理由(reason)と自信度(confidence)を記述してください。不明な場合は 'UNKNOWN' としてください。
-      3. トピック評価の根拠として、必ず該当する文の ID (sequenceNum) を配列で指定してください。LLM自身でテキストを捏造せず、必ず提供されたIDのみを使用してください。
-      4. 言及されていないトピックは必ず null を設定してください。
-    `,
+      【重要ルール】
+      1. 口コミの中に「部屋」「食事」「接客」「風呂」「立地」「その他」に関する言及があれば、**絶対に省略せずすべて**抽出して \`topics\` 配列に追加してください。
+      2. 該当する文の ID (sequenceNum) を配列で指定してください。
+
+      【出力の具体例】
+      入力テキスト: 
+      [ID: 0] The room was beautiful but the breakfast was terrible.
+      [ID: 1] また、フロントのスタッフの対応はとても良かったです。
+
+      この場合、topics配列には必ず以下の3つの要素を含めること:
+      - topic: "ROOM", label: "PRAISE", rating: 5, evidenceSequenceNums: [0]
+      - topic: "FOOD", label: "COMPLAINT", rating: 1, evidenceSequenceNums: [0]
+      - topic: "SERVICE", label: "PRAISE", rating: 5, evidenceSequenceNums: [1]
+      `,
     prompt: `以下の口コミを分析してください:\n\n${formattedText}`,
   });
 

@@ -39,6 +39,10 @@ export async function processReviewUseCase(
   // 2. 【分析】AIによるアスペクト分析と属性推論 (LLM Call 2)
   console.log("[Workflow] 2. 構造化分析を実行中...");
   const aiResult = await analyzeReview(sentences);
+  console.log(
+    "[DEBUG] AIの抽出したトピック:",
+    JSON.stringify(aiResult.topics, null, 2),
+  );
 
   // 3. 【マッピング】AIの出力結果を「純粋なドメインモデル (types.ts)」に変換する
   console.log("[Workflow] 3. ドメインモデルを構築中...");
@@ -53,18 +57,13 @@ export async function processReviewUseCase(
     overallLabel: { ...aiResult.overallLabel, provenance: "INFERRED" },
   };
 
-  // トピック評価 (TopicEvaluation) の構築（オブジェクトから配列への変換）
-  const topics: TopicEvaluation[] = [];
-  for (const [key, topicData] of Object.entries(aiResult.topics)) {
-    if (topicData) {
-      topics.push({
-        topic: key as TopicType,
-        label: topicData.label,
-        rating: topicData.rating,
-        evidenceSequenceNums: topicData.evidenceSequenceNums,
-      });
-    }
-  }
+  // トピック評価 (TopicEvaluation) の構築
+  const topics: TopicEvaluation[] = aiResult.topics.map((t) => ({
+    topic: t.topic as TopicType,
+    label: t.label,
+    rating: t.rating,
+    evidenceSequenceNums: [...t.evidenceSequenceNums],
+  }));
 
   // 完全な集約ルート (Review) の構築
   const reviewDomainModel: Review = {

@@ -11,6 +11,9 @@ export const PreprocessOutputSchema = z.object({
 
 // --- LLM Call 2: 分析・推論用スキーマ ---
 export const TopicAnalysisSchema = z.object({
+  topic: z
+    .enum(["FOOD", "ROOM", "BATH", "SERVICE", "LOCATION", "OTHER"])
+    .describe("言及されているトピックの種類"),
   label: z
     .enum(["PRAISE", "COMPLAINT", "REQUEST", "INQUIRY", "NEUTRAL"])
     .describe("そのトピックに対する顧客の感情や意図"),
@@ -23,7 +26,7 @@ export const TopicAnalysisSchema = z.object({
   evidenceSequenceNums: z
     .array(z.number())
     .describe(
-      "この評価の根拠となった文の sequenceNum の配列。該当なしの場合は空配列",
+      "この評価の根拠となった文の sequenceNum の配列。必ず指定すること",
     ),
 });
 
@@ -65,28 +68,12 @@ export const ReviewAnalysisOutputSchema = z.object({
     reason: z.string(),
   }),
 
-  // トピック別分析（null を許容することで、「言及されていない」ことを表現）
-  topics: z.object({
-    FOOD: TopicAnalysisSchema.nullable().describe(
-      "食事、レストラン、朝食などに関する言及",
+  // トピック別分析
+  topics: z
+    .array(TopicAnalysisSchema)
+    .describe(
+      "口コミ内で言及されているトピックのリスト。何も言及がない場合のみ空配列にする。見つけた分だけ抽出すること。",
     ),
-    ROOM: TopicAnalysisSchema.nullable().describe(
-      "客室、清掃状態、アメニティなどに関する言及",
-    ),
-    BATH: TopicAnalysisSchema.nullable().describe(
-      "風呂、温泉、大浴場などに関する言及",
-    ),
-    SERVICE: TopicAnalysisSchema.nullable().describe(
-      "接客、スタッフの対応、フロントなどに関する言及",
-    ),
-    LOCATION: TopicAnalysisSchema.nullable().describe(
-      "立地、アクセス、周辺環境などに関する言及",
-    ),
-    OTHER:
-      TopicAnalysisSchema.nullable().describe(
-        "上記に当てはまらない設備や体験など",
-      ),
-  }),
 });
 
 // TypeScriptの型もZodから自動生成
