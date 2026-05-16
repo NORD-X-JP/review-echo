@@ -17,9 +17,9 @@ export type TopicType =
   | "OTHER";
 
 // 2. 推論データをラップする型
-export interface InferredValue<T> {
+export interface DomainValue<T> {
   readonly value: T;
-  readonly provenance: "INFERRED";
+  readonly provenance: Provenance;
   readonly confidence: number | null;
   readonly reason: string | null;
 }
@@ -44,10 +44,10 @@ export interface ReviewAnalysis {
   readonly primaryLanguage: string;
   readonly secondaryLanguages: readonly string[];
 
-  readonly nationality: InferredValue<string>;
-  readonly gender: InferredValue<Gender>;
-  readonly companion: InferredValue<CompanionType>;
-  readonly overallLabel: InferredValue<ReviewLabel>;
+  readonly nationality: DomainValue<string>;
+  readonly gender: DomainValue<Gender>;
+  readonly companion: DomainValue<CompanionType>;
+  readonly overallLabel: DomainValue<ReviewLabel>;
 }
 
 // 6. レビュー（集約ルート - Aggregate Root）
