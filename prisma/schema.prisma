@@ -6,9 +6,139 @@ datasource db {
   provider  = "postgresql"
 }
 
+// --- Enums ---
+enum Provenance {
+  FACT
+  INFERRED
+}
+
+enum ReviewLabel {
+  PRAISE
+  COMPLAINT
+  REQUEST
+  INQUIRY
+  NEUTRAL
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+enum CompanionType {
+  SOLO
+  COUPLE
+  FAMILY
+  GROUP
+  UNKNOWN
+}
+
+enum TopicType {
+  FOOD
+  ROOM
+  BATH
+  SERVICE
+  LOCATION
+  OTHER
+}
+
+// --- Models ---
+
+// 1. 宿泊事業者（システムユーザー/テナント）
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String   @map("hotel_name")
   createdAt DateTime @default(now())
+
+  reviews   Review[]
+}
+
+// 2. 口コミの事実データ (Aggregate Root)
+model Review {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  reviewUrl      String?
+  overallRating  Int
+  postedAt       DateTime
+  
+  // --- 重複排除用のカラム（追加） ---
+  // Googleなどの一意なID。ない場合はハッシュ値を格納。
+  sourceReviewId String
+  
+  // --- 投稿者情報（avatarUrlを追加） ---
+  reviewerName   String
+  sourceUserId   String?  
+  avatarUrl      String?  
+  
+  createdAt      DateTime @default(now())
+
+  // リレーション
+  sentences      Sentence[]
+  analysis       ReviewAnalysis? 
+  topics         TopicEvaluation[]
+
+  // 同じホテルに対して、同じ口コミIDが重複して登録されないようにする複合ユニーク制約
+  @@unique([userId, sourceReviewId])
+}
+
+// 3. 分割された文 (Tokenized Sentences)
+model Sentence {
+  id             String  @id @default(uuid())
+  reviewId       String
+  review         Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  
+  sequenceNum    Int     // 0, 1, 2...
+  originalText   String
+  translatedText String?
+
+  @@unique([reviewId, sequenceNum]) 
+}
+
+// 4. LLMによる推論・属性データ (1対1)
+model ReviewAnalysis {
+  id                  String     @id @default(uuid())
+  reviewId            String     @unique
+  review              Review     @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  primaryLanguage     String
+  secondaryLanguages  String[]
+
+  nationalityValue    String
+  nationalityProv     Provenance
+  nationalityConf     Float?
+  nationalityReason   String?
+
+  genderValue         Gender
+  genderProv          Provenance
+  genderConf          Float?
+  genderReason        String?
+
+  companionValue      CompanionType
+  companionProv       Provenance
+  companionConf       Float?
+  companionReason     String?
+
+  overallLabelValue   ReviewLabel
+  overallLabelProv    Provenance
+  overallLabelConf    Float?
+  overallLabelReason  String?
+}
+
+// 5. トピックごとのアスペクト分析 (1対多)
+model TopicEvaluation {
+  id                   String      @id @default(uuid())
+  reviewId             String
+  review               Review      @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  topic                TopicType
+  label                ReviewLabel
+  rating               Int         // 1~5
+  
+  // 該当するSentenceのsequenceNumの配列
+  evidenceSequenceNums Int[]       
 }
