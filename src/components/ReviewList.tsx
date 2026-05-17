@@ -83,31 +83,92 @@ export function ReviewList({ reviews }: ReviewListProps) {
 
               {/* 口コミ本文のハイライト描画 */}
               <div className="mt-4 text-gray-700 leading-relaxed">
-                {review.sentences.map((sentence) => {
-                  const isHighlighted = highlightIds.includes(
-                    sentence.sequenceNum,
+                {(() => {
+                  // レビュー内に1つでも翻訳された文（外国語）が含まれているか判定
+                  const hasTranslation = review.sentences.some(
+                    (s) => s.translatedText,
                   );
 
+                  if (hasTranslation) {
+                    return (
+                      <div className="space-y-3">
+                        {/* 1. 和訳ブロック */}
+                        <div>
+                          <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded mr-2 mb-1">
+                            和訳
+                          </span>
+                          {review.sentences.map((sentence) => {
+                            const isHighlighted = highlightIds.includes(
+                              sentence.sequenceNum,
+                            );
+                            // 翻訳があれば翻訳文を、なければ（日本語の文などが混ざっていれば）原文を表示
+                            const textToShow =
+                              sentence.translatedText || sentence.originalText;
+                            return (
+                              <span
+                                key={`trans-${sentence.sequenceNum}`}
+                                className={`transition-colors duration-300 ${
+                                  isHighlighted
+                                    ? "bg-yellow-200 text-black font-medium py-0.5 px-1 rounded"
+                                    : ""
+                                }`}
+                              >
+                                {textToShow}{" "}
+                              </span>
+                            );
+                          })}
+                        </div>
+
+                        {/* 2. 原文ブロック (小さく、薄く表示) */}
+                        <div className="text-sm opacity-75 border-l-4 border-gray-200 pl-3">
+                          <span className="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded mr-2 mb-1">
+                            原文
+                          </span>
+                          {review.sentences.map((sentence) => {
+                            const isHighlighted = highlightIds.includes(
+                              sentence.sequenceNum,
+                            );
+                            return (
+                              <span
+                                key={`orig-${sentence.sequenceNum}`}
+                                className={`transition-colors duration-300 ${
+                                  isHighlighted
+                                    ? "bg-yellow-200 text-black font-medium py-0.5 px-1 rounded"
+                                    : ""
+                                }`}
+                              >
+                                {sentence.originalText}{" "}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 翻訳がない（すべて日本語）場合は、通常通り1つのブロックで表示
                   return (
-                    <span
-                      key={sentence.sequenceNum}
-                      className={`transition-colors duration-300 ${
-                        isHighlighted
-                          ? "bg-yellow-200 text-black font-medium py-0.5 px-1 rounded"
-                          : ""
-                      }`}
-                    >
-                      {/* 和訳が存在する場合は、原文の横に表示するか、和訳を優先表示する */}
-                      {sentence.translatedText ? (
-                        <span title={sentence.originalText}>
-                          {sentence.translatedText}{" "}
-                        </span>
-                      ) : (
-                        <span>{sentence.originalText} </span>
-                      )}
-                    </span>
+                    <div>
+                      {review.sentences.map((sentence) => {
+                        const isHighlighted = highlightIds.includes(
+                          sentence.sequenceNum,
+                        );
+                        return (
+                          <span
+                            key={`orig-${sentence.sequenceNum}`}
+                            className={`transition-colors duration-300 ${
+                              isHighlighted
+                                ? "bg-yellow-200 text-black font-medium py-0.5 px-1 rounded"
+                                : ""
+                            }`}
+                          >
+                            {sentence.originalText}{" "}
+                          </span>
+                        );
+                      })}
+                    </div>
                   );
-                })}
+                })()}
               </div>
 
               {/* ハイライトされたAIの感情評価と理由の表示 */}
