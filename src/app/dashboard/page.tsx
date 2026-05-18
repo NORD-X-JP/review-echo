@@ -1,5 +1,5 @@
-import { DashboardSummary } from "@/components/DashboardSummary";
-import { ReviewList } from "@/components/ReviewList";
+import { DashboardSummary } from "@/features/review/components/DashboardSummary";
+import { ReviewList } from "@/features/review/components/ReviewList";
 import { fetchDashboardDataUseCase } from "@/features/review/application/query-workflow";
 
 export default async function DashboardPage() {
