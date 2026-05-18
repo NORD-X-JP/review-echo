@@ -5,7 +5,11 @@ import { fetchDashboardDataUseCase } from "@/features/review/application/query-w
 export default async function DashboardPage() {
   // ※本来はログインセッションから取得しますが、今回はテスト用IDを直接指定します
   // テストデータを作成した際のUserのIDに書き換えてください（例: Prisma Studioで確認）
-  const hotelId = "1d91b393-b896-400a-af24-d457b71fbc63";
+  const hotelId = process.env.TEST_HOTEL_ID;
+
+  if (!hotelId) {
+    throw new Error("TEST_HOTEL_ID is not set");
+  }
 
   // 1. クリーンアーキテクチャのユースケースを呼び出し、完全な型を持つデータを取得
   const reviews = await fetchDashboardDataUseCase(hotelId);
