@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { submitTestReviewAction } from "@/features/review/presentation/actions";
 
 export default function TestPage() {
