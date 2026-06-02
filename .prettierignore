@@ -15,6 +15,12 @@ build/
 .env.development
 .env.production
 
+# Markdownや設定ファイル、エージェント用ディレクトリ
+*.md
+.agents/
+.claude/
+.github/
+
 # その他自動生成ファイル
 next-env.d.ts
 public/
