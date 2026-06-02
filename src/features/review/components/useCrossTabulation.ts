@@ -112,14 +112,26 @@ export function useCrossTabulation(reviews: Review[]) {
       }
     });
 
-    return Object.entries(counts)
-      .map(([nat, labelCounts]) => ({
-        name: nat,
-        ...labelCounts,
-        total: Object.values(labelCounts).reduce((a, b) => a + b, 0),
-      }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 7);
+    // 全体を計算して配列化する
+    const allData = Object.entries(counts).map(([nat, labelCounts]) => ({
+      name: nat,
+      ...labelCounts,
+      total: Object.values(labelCounts).reduce((a, b) => a + b, 0),
+    }));
+
+    // 1. 合計数（total）が多い順にソートする
+    allData.sort((a, b) => b.total - a.total);
+
+    // 2. 上位7カ国だけに絞る
+    const top7 = allData.slice(0, 7);
+
+    // 3. 絞り込んだ7件の中で、「不明」だけを右端（最後）に移動させるカスタムソート
+    return top7.sort((a, b) => {
+      if (a.name === "不明") return 1; // aが「不明」なら後ろへ
+      if (b.name === "不明") return -1; // bが「不明」なら前（aを維持）へ
+      // どちらも「不明」でなければ、既存の順番（totalの降順）を維持
+      return b.total - a.total;
+    });
   }, [reviews]);
 
   return { topicData, nationalityData };
