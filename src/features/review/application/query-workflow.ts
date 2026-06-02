@@ -11,19 +11,36 @@ import {
   CompanionType,
 } from "../domain/types";
 
+// 許可される期間指定の型
+export type DateRangeOption = "all" | "7days" | "30days" | "90days";
+
 /**
- * ダッシュボード表示用の口コミデータを取得し、ドメインモデルに変換して返すユースケース
- *
- * @param hotelId 宿泊事業者のシステム内部ID
- * @returns 完全に型付けされた純粋な Review ドメインモデルの配列
+ * ダッシュボード表示用の口コミデータを取得し、ドメインモデルに変換して返す
  */
 export async function fetchDashboardDataUseCase(
   hotelId: string,
+  rangeOption: DateRangeOption = "all", // デフォルトは全期間
 ): Promise<Review[]> {
-  // 1. インフラ層からDBの生データを取得
-  const rawReviews = await findReviewsWithDetailsByHotelId(hotelId);
+  // 1. 文字列のオプションから、具体的な日付（startDate）を計算する
+  let startDate: Date | undefined = undefined;
 
-  // 2. DBの型からドメインモデルの型へマッピング（リハイドレーション）
+  if (rangeOption !== "all") {
+    const now = new Date();
+    startDate = new Date();
+
+    if (rangeOption === "7days") {
+      startDate.setDate(now.getDate() - 7);
+    } else if (rangeOption === "30days") {
+      startDate.setDate(now.getDate() - 30);
+    } else if (rangeOption === "90days") {
+      startDate.setDate(now.getDate() - 90);
+    }
+  }
+
+  // 2. 計算した日付を使ってインフラ層からデータを取得
+  const rawReviews = await findReviewsWithDetailsByHotelId(hotelId, startDate);
+
+  // 3. DBの型からドメインモデルの型へマッピング
   return rawReviews.map((raw): Review => {
     // --- A. AI分析データ (ReviewAnalysis) の再構築 ---
     let analysis: ReviewAnalysis | undefined = undefined;
@@ -75,7 +92,7 @@ export async function fetchDashboardDataUseCase(
       translatedText: s.translatedText,
     }));
 
-    // --- D. 最終的な集約ルート (Review) の構築と返却 ---
+    // --- D. 最終的な集約ルート (Review) の構築 ---
     return {
       id: raw.id,
       hotelId: raw.userId,
@@ -86,7 +103,6 @@ export async function fetchDashboardDataUseCase(
       reviewerName: raw.reviewerName,
       sourceUserId: raw.sourceUserId,
       avatarUrl: raw.avatarUrl,
-
       sentences,
       analysis,
       topics,

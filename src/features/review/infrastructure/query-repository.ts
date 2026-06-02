@@ -2,28 +2,29 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * 指定された宿泊事業者（ホテルID）に紐づくすべての口コミデータを取得する。
- * 文の順番（sequenceNum）が崩れないようにソートして取得するのがポイント。
- *
- * @param hotelId 宿泊事業者のシステム内部ID (User.id)
+ * * @param hotelId 宿泊事業者のシステム内部ID
+ * @param startDate 取得開始日（オプション）
+ * @param endDate 取得終了日（オプション）
  */
-export async function findReviewsWithDetailsByHotelId(hotelId: string) {
+export async function findReviewsWithDetailsByHotelId(
+  hotelId: string,
+  startDate?: Date,
+  endDate?: Date,
+) {
   return await prisma.review.findMany({
     where: {
       userId: hotelId,
+      // startDateやendDateが渡された場合のみ、postedAt（投稿日）で絞り込む
+      postedAt: {
+        ...(startDate ? { gte: startDate } : {}),
+        ...(endDate ? { lte: endDate } : {}),
+      },
     },
     include: {
-      // 1. 分割された文データ（必ず元の文章の順番通りに取得する）
-      sentences: {
-        orderBy: { sequenceNum: "asc" },
-      },
-      // 2. AIによる全体分析データ (1対1)
+      sentences: { orderBy: { sequenceNum: "asc" } },
       analysis: true,
-      // 3. トピック別のアスペクト評価データ (1対多)
       topics: true,
     },
-    // 新しい口コミが一番上に来るように降順でソート
-    orderBy: {
-      postedAt: "desc",
-    },
+    orderBy: { postedAt: "desc" },
   });
 }
