@@ -49,11 +49,22 @@ export function ReviewListCard({
     : [];
   const hasTranslation = review.sentences.some((s) => s.translatedText);
 
+  const formattedDate = new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(review.postedAt));
+
   return (
     <article className="border border-gray-100 rounded-lg p-5 bg-gray-50/50">
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-semibold text-gray-900">{review.reviewerName}</h3>
+          <div className="flex items-center gap-5">
+            <h3 className="font-semibold text-gray-900">
+              {review.reviewerName}
+            </h3>
+            <span className="text-sm text-gray-400">{formattedDate}</span>
+          </div>
           <div className="flex gap-3 text-xs text-gray-500 mt-1">
             <span>推定属性: {review.analysis?.companion.value}</span>
             <span>国籍: {review.analysis?.nationality.value}</span>
