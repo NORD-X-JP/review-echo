@@ -1,0 +1,37 @@
+name: CI
+
+# CIが走るタイミングの設定
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  lint-and-format:
+    # 実行するOS環境（Ubuntuの最新版）
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHubからコードをダウンロード（チェックアウト）する
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Node.jsの環境をセットアップする
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # ローカルの開発環境と同じバージョンを指定
+          cache: "npm"
+
+      # 3. パッケージをインストールする（npm installより厳密な npm ci を使用）
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. ESLintで構文エラーをチェックする
+      - name: Run ESLint
+        run: npm run lint
+
+      # 5. Prettierでフォーマット違反をチェックする
+      - name: Check Formatting
+        run: npm run format:check

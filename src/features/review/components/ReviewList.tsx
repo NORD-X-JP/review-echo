@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Review } from '@/features/review/domain/types';
-import { useReviewFilter } from './useReviewFilter';
-import { ReviewListSearch } from './ReviewListSearch';
-import { ReviewListCard } from './ReviewListCard';
+import { Review } from "@/features/review/domain/types";
+import { useReviewFilter } from "./useReviewFilter";
+import { ReviewListSearch } from "./ReviewListSearch";
+import { ReviewListCard } from "./ReviewListCard";
 
 interface ReviewListProps {
   reviews: Review[];

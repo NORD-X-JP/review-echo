@@ -1,38 +1,52 @@
-'use client';
+"use client";
 
-import { Review, TopicType } from '@/features/review/domain/types';
+import { Review, TopicType } from "@/features/review/domain/types";
 
 interface ReviewListCardProps {
   review: Review;
-  activeTopic: TopicType | 'ALL';
+  activeTopic: TopicType | "ALL";
   searchQuery: string;
 }
 
 // --- ヘルパー関数: 検索キーワードのハイライト描画 ---
 function escapeRegExp(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function HighlightedText({ text, query }: { text: string; query: string }) {
   if (!query.trim()) return <>{text}</>;
   const escapedQuery = escapeRegExp(query);
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
+  const parts = text.split(new RegExp(`(${escapedQuery})`, "gi"));
   return (
     <>
       {parts.map((part, index) =>
         part.toLowerCase() === query.toLowerCase() ? (
-          <span key={index} className="bg-orange-400 text-black font-bold px-1 rounded mx-0.5">{part}</span>
+          <span
+            key={index}
+            className="bg-orange-400 text-black font-bold px-1 rounded mx-0.5"
+          >
+            {part}
+          </span>
         ) : (
           <span key={index}>{part}</span>
-        )
+        ),
       )}
     </>
   );
 }
 
-export function ReviewListCard({ review, activeTopic, searchQuery }: ReviewListCardProps) {
-  const activeTopicData = activeTopic === 'ALL' ? null : review.topics?.find((t) => t.topic === activeTopic);
-  const highlightIds = activeTopicData ? activeTopicData.evidenceSequenceNums : [];
+export function ReviewListCard({
+  review,
+  activeTopic,
+  searchQuery,
+}: ReviewListCardProps) {
+  const activeTopicData =
+    activeTopic === "ALL"
+      ? null
+      : review.topics?.find((t) => t.topic === activeTopic);
+  const highlightIds = activeTopicData
+    ? activeTopicData.evidenceSequenceNums
+    : [];
   const hasTranslation = review.sentences.some((s) => s.translatedText);
 
   return (
@@ -46,7 +60,9 @@ export function ReviewListCard({ review, activeTopic, searchQuery }: ReviewListC
             <span>全体感情: {review.analysis?.overallLabel.value}</span>
           </div>
         </div>
-        <div className="text-lg font-bold text-yellow-500">★ {review.overallRating}</div>
+        <div className="text-lg font-bold text-yellow-500">
+          ★ {review.overallRating}
+        </div>
       </div>
 
       <div className="mt-4 text-gray-700 leading-relaxed">
@@ -54,25 +70,46 @@ export function ReviewListCard({ review, activeTopic, searchQuery }: ReviewListC
           <div className="space-y-3">
             {/* 和訳ブロック */}
             <div>
-              <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded mr-2 mb-1">和訳</span>
+              <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded mr-2 mb-1">
+                和訳
+              </span>
               {review.sentences.map((sentence) => {
-                const isHighlighted = highlightIds.includes(sentence.sequenceNum);
-                const textToShow = sentence.translatedText || sentence.originalText;
+                const isHighlighted = highlightIds.includes(
+                  sentence.sequenceNum,
+                );
+                const textToShow =
+                  sentence.translatedText || sentence.originalText;
                 return (
-                  <span key={`trans-${sentence.sequenceNum}`} className={`transition-colors duration-300 ${isHighlighted ? 'bg-yellow-200 text-black font-medium py-0.5 px-1 rounded' : ''}`}>
-                    <HighlightedText text={textToShow} query={searchQuery} />{' '}
+                  <span
+                    key={`trans-${sentence.sequenceNum}`}
+                    className={`transition-colors duration-300 ${isHighlighted ? "bg-yellow-200 text-black font-medium py-0.5 px-1 rounded" : ""}`}
+                  >
+                    <HighlightedText
+                      text={textToShow}
+                      query={searchQuery}
+                    />{" "}
                   </span>
                 );
               })}
             </div>
             {/* 原文ブロック */}
             <div className="text-sm opacity-75 border-l-4 border-gray-200 pl-3">
-              <span className="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded mr-2 mb-1">原文</span>
+              <span className="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded mr-2 mb-1">
+                原文
+              </span>
               {review.sentences.map((sentence) => {
-                const isHighlighted = highlightIds.includes(sentence.sequenceNum);
+                const isHighlighted = highlightIds.includes(
+                  sentence.sequenceNum,
+                );
                 return (
-                  <span key={`orig-${sentence.sequenceNum}`} className={`transition-colors duration-300 ${isHighlighted ? 'bg-yellow-200 text-black font-medium py-0.5 px-1 rounded' : ''}`}>
-                    <HighlightedText text={sentence.originalText} query={searchQuery} />{' '}
+                  <span
+                    key={`orig-${sentence.sequenceNum}`}
+                    className={`transition-colors duration-300 ${isHighlighted ? "bg-yellow-200 text-black font-medium py-0.5 px-1 rounded" : ""}`}
+                  >
+                    <HighlightedText
+                      text={sentence.originalText}
+                      query={searchQuery}
+                    />{" "}
                   </span>
                 );
               })}
@@ -84,8 +121,14 @@ export function ReviewListCard({ review, activeTopic, searchQuery }: ReviewListC
             {review.sentences.map((sentence) => {
               const isHighlighted = highlightIds.includes(sentence.sequenceNum);
               return (
-                <span key={`orig-${sentence.sequenceNum}`} className={`transition-colors duration-300 ${isHighlighted ? 'bg-yellow-200 text-black font-medium py-0.5 px-1 rounded' : ''}`}>
-                  <HighlightedText text={sentence.originalText} query={searchQuery} />{' '}
+                <span
+                  key={`orig-${sentence.sequenceNum}`}
+                  className={`transition-colors duration-300 ${isHighlighted ? "bg-yellow-200 text-black font-medium py-0.5 px-1 rounded" : ""}`}
+                >
+                  <HighlightedText
+                    text={sentence.originalText}
+                    query={searchQuery}
+                  />{" "}
                 </span>
               );
             })}
@@ -95,7 +138,8 @@ export function ReviewListCard({ review, activeTopic, searchQuery }: ReviewListC
 
       {activeTopicData && (
         <div className="mt-4 p-3 bg-blue-50 text-blue-800 text-sm rounded-md border border-blue-100">
-          <span className="font-bold">AIの評価:</span> {activeTopicData.label} (スコア: {activeTopicData.rating}/5)
+          <span className="font-bold">AIの評価:</span> {activeTopicData.label}{" "}
+          (スコア: {activeTopicData.rating}/5)
         </div>
       )}
     </article>

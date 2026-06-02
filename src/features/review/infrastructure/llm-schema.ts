@@ -2,11 +2,20 @@ import { z } from "zod";
 
 // --- LLM Call 1: 前処理（分割・翻訳）用スキーマ ---
 export const PreprocessOutputSchema = z.object({
-  sentences: z.array(z.object({
-    sequenceNum: z.number().describe('0から始まる連番'),
-    originalText: z.string().describe('元の口コミの1文（意味的な区切り）'),
-    translatedText: z.string().nullable().describe('原文が日本語以外の場合は日本語訳。日本語の場合はnull')
-  })).describe('口コミを意味的な1文ごとに分割した配列。和訳が併記されている場合は、外国語と和訳を1つの文としてまとめて扱うこと。')
+  sentences: z
+    .array(
+      z.object({
+        sequenceNum: z.number().describe("0から始まる連番"),
+        originalText: z.string().describe("元の口コミの1文（意味的な区切り）"),
+        translatedText: z
+          .string()
+          .nullable()
+          .describe("原文が日本語以外の場合は日本語訳。日本語の場合はnull"),
+      }),
+    )
+    .describe(
+      "口コミを意味的な1文ごとに分割した配列。和訳が併記されている場合は、外国語と和訳を1つの文としてまとめて扱うこと。",
+    ),
 });
 
 // --- LLM Call 2: 分析・推論用スキーマ ---

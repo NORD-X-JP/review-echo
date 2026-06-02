@@ -1,0 +1,26 @@
+# パッケージ管理
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Next.js のビルド成果物
+.next/
+out/
+build/
+
+# 環境変数など
+.env*
+.env.local
+.env.development
+.env.production
+
+# Markdownや設定ファイル、エージェント用ディレクトリ
+*.md
+.agents/
+.claude/
+.github/
+
+# その他自動生成ファイル
+next-env.d.ts
+public/
