@@ -54,7 +54,7 @@ export function CrossTabulationTopicChart({ data }: Props) {
             />
             <Bar
               dataKey="MIXED"
-              name="賛否両論"
+              name="賛否"
               stackId="a"
               fill={LABEL_COLORS.MIXED}
             />
