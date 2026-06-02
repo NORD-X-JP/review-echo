@@ -1,9 +1,14 @@
+import { z } from "zod";
 import { google } from "@ai-sdk/google"; // OpenAIにする場合は '@ai-sdk/openai' に変更
 import { generateText, Output } from "ai";
 import {
   PreprocessOutputSchema,
   ReviewAnalysisOutputSchema,
 } from "./llm-schema";
+
+type PreprocessedSentences = z.infer<
+  typeof PreprocessOutputSchema
+>["sentences"];
 
 // 1. 分割・翻訳を行う関数
 export async function extractAndTranslate(rawReviewText: string) {
@@ -23,7 +28,7 @@ export async function extractAndTranslate(rawReviewText: string) {
 }
 
 // 2. 構造化分析を行う関数
-export async function analyzeReview(sentences: any[]) {
+export async function analyzeReview(sentences: PreprocessedSentences) {
   const formattedText = sentences
     .map((s) => {
       if (s.translatedText) {
@@ -34,7 +39,7 @@ export async function analyzeReview(sentences: any[]) {
     })
     .join("\n");
 
-    console.log("[DEBUG] 分析AIに渡すテキスト:\n", formattedText);
+  console.log("[DEBUG] 分析AIに渡すテキスト:\n", formattedText);
 
   const { output } = await generateText({
     model: google("gemini-3.1-flash-lite"), // OpenAIなら openai('gpt-4o-mini') とする
