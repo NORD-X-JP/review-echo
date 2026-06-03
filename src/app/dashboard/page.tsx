@@ -1,3 +1,4 @@
+import { CrossTabulation } from "@/features/review/components/CrossTabulation";
 import { DashboardSummary } from "@/features/review/components/DashboardSummary";
 import { ReviewList } from "@/features/review/components/ReviewList";
 import { DateRangeFilter } from "@/features/review/components/DateRangeFilter";
@@ -51,7 +52,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             {/* サマリーセクション（渡されるreviewsは既に期間で絞り込まれている） */}
             <DashboardSummary reviews={reviews} />
 
-            {/* クロス集計エリア (次回ここに実装します) */}
+            {/* クロス集計エリア */}
+            <CrossTabulation reviews={reviews} />
 
             {/* 口コミ一覧セクション */}
             <ReviewList reviews={reviews} />
