@@ -1,6 +1,7 @@
 "use client";
 
 import { Review, ReviewLabel, TopicType } from "@/features/review/domain/types";
+import { getNationalityDisplayName } from "@/features/review/domain/nationality";
 
 interface ReviewListCardProps {
   review: Review;
@@ -79,7 +80,11 @@ export function ReviewListCard({
           </div>
           <div className="flex gap-3 text-xs text-gray-500 mt-1">
             <span>推定属性: {review.analysis?.companion.value}</span>
-            <span>国籍: {review.analysis?.nationality.value}</span>
+            <span>
+              国籍:{" "}
+              {review.analysis &&
+                getNationalityDisplayName(review.analysis.nationality.value)}
+            </span>
             <span>全体感情: {review.analysis?.overallLabel.value}</span>
           </div>
         </div>

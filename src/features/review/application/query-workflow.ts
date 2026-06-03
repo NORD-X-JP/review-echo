@@ -10,6 +10,7 @@ import {
   Gender,
   CompanionType,
 } from "../domain/types";
+import { parseNationalityCode } from "../domain/nationality";
 
 // 許可される期間指定の型
 export type DateRangeOption = "all" | "7days" | "30days" | "90days";
@@ -51,7 +52,7 @@ export async function fetchDashboardDataUseCase(
 
         // フラット化されていたDBのカラムを、InferredValue型（オブジェクト）に包み直す
         nationality: {
-          value: raw.analysis.nationalityValue,
+          value: parseNationalityCode(raw.analysis.nationalityValue),
           provenance: raw.analysis.nationalityProv as Provenance,
           confidence: raw.analysis.nationalityConf,
           reason: raw.analysis.nationalityReason,

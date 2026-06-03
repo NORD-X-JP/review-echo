@@ -51,6 +51,17 @@ export async function analyzeReview(sentences: PreprocessedSentences) {
       提供される口コミテキストは、文ごとに分割され [ID: X] というタグが付けられています。
       テキストには「原文」と、それが外国語の場合のみ「和訳」が併記されています。
 
+      【国籍コードのルール】
+      nationality.value は必ず次のいずれかのコードだけで出力してください。
+      JP, KR, CN, TW, HK, US, CA, GB, AU, FR, DE, IT, ES, TH, VN, ID, MY, SG, PH, IN, UNKNOWN
+      表記ゆれは禁止です。例:
+      - 日本・JAPAN・Japanese → JP
+      - 韓国・KOREA・SOUTH_KOREA・Korean → KR
+      - 中国・CHINA・Chinese → CN
+      - 台湾・TAIWAN・Taiwanese → TW
+      - アメリカ・USA・United States・American → US
+      明確に推定できない場合は UNKNOWN にしてください。
+
       【重要ルール】
       1. 言語判定・属性推論: \`primaryLanguage\` や国籍などは、必ず「原文」の言語やニュアンスをもとに推論してください。
       2. トピック抽出: 口コミの中に「部屋」「食事」「接客」「風呂」「立地」「その他」に関する言及があれば、絶対に省略せずすべて抽出して topics 配列に追加してください。意味の解釈には「和訳」を利用してください。

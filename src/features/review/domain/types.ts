@@ -1,5 +1,8 @@
+import type { NationalityCode } from "./nationality";
+
 // 1. 純粋なリテラル型
 export type Provenance = "FACT" | "INFERRED";
+export type { NationalityCode };
 export type ReviewLabel =
   | "PRAISE"
   | "COMPLAINT"
@@ -44,7 +47,7 @@ export interface ReviewAnalysis {
   readonly primaryLanguage: string;
   readonly secondaryLanguages: readonly string[];
 
-  readonly nationality: DomainValue<string>;
+  readonly nationality: DomainValue<NationalityCode>;
   readonly gender: DomainValue<Gender>;
   readonly companion: DomainValue<CompanionType>;
   readonly overallLabel: DomainValue<ReviewLabel>;
