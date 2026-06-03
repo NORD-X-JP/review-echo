@@ -1,3 +1,5 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { CrossTabulation } from "@/features/review/components/CrossTabulation";
 import { DashboardSummary } from "@/features/review/components/DashboardSummary";
 import { ReviewList } from "@/features/review/components/ReviewList";
@@ -6,29 +8,47 @@ import {
   fetchDashboardDataUseCase,
   DateRangeOption,
 } from "@/features/review/application/query-workflow";
+import {
+  ensureUserRecord,
+  getOrganizationId,
+} from "@/features/review/application/workspace-workflow";
 
-// Next.jsの仕様: searchParams を受け取るインターフェース
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function DashboardPage({ searchParams }: PageProps) {
-  // ※本来はログインセッションから取得するが、今回はテスト用IDを直接指定
-  // テストデータを作成した際のUserのIDに書き換えてください
-  const hotelId = process.env.TEST_HOTEL_ID;
-  if (!hotelId) throw new Error("TEST_HOTEL_ID is not set");
+  const { userId } = await auth();
+  if (!userId) redirect("/");
 
-  // 1. URLから 'range' パラメータを取得
+  const clerkUser = await currentUser();
+
+  // User レコードを確保したうえで所属組織を確認
+  await ensureUserRecord(userId, clerkUser);
+  const organizationId = await getOrganizationId(userId);
+
+  if (!organizationId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <p className="text-lg font-semibold text-gray-800">
+            このアカウントには利用権限がありません。
+          </p>
+          <p className="text-sm text-gray-500">
+            管理者から招待を受けてください。
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const resolvedParams = await searchParams;
   const rangeOption = (resolvedParams.range as DateRangeOption) || "all";
-
-  // 2. 指定された期間でデータを取得（DB側で絞り込まれる）
-  const reviews = await fetchDashboardDataUseCase(hotelId, rangeOption);
+  const reviews = await fetchDashboardDataUseCase(organizationId, rangeOption);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* ページヘッダーと期間フィルターを並べて配置 */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -38,8 +58,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               AIが抽出したインサイトと感情分析
             </p>
           </div>
-
-          {/* 追加した期間フィルター UI */}
           <DateRangeFilter />
         </header>
 
@@ -49,13 +67,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </div>
         ) : (
           <>
-            {/* サマリーセクション（渡されるreviewsは既に期間で絞り込まれている） */}
             <DashboardSummary reviews={reviews} />
-
-            {/* クロス集計エリア */}
             <CrossTabulation reviews={reviews} />
-
-            {/* 口コミ一覧セクション */}
             <ReviewList reviews={reviews} />
           </>
         )}
