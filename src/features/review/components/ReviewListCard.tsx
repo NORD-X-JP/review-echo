@@ -42,13 +42,15 @@ export function ReviewListCard({
   activeLabel,
   searchQuery,
 }: ReviewListCardProps) {
+  const isAllSelected = activeTopic === "ALL" && activeLabel === "ALL";
   // 現在選択されている条件（トピック＆感情）に合致する「すべてのトピック評価」を抽出する
-  const matchingTopics =
-    review.topics?.filter((t) => {
-      const matchTopic = activeTopic === "ALL" || t.topic === activeTopic;
-      const matchLabel = activeLabel === "ALL" || t.label === activeLabel;
-      return matchTopic && matchLabel;
-    }) || [];
+  const matchingTopics = isAllSelected
+    ? []
+    : review.topics?.filter((t) => {
+        const matchTopic = activeTopic === "ALL" || t.topic === activeTopic;
+        const matchLabel = activeLabel === "ALL" || t.label === activeLabel;
+        return matchTopic && matchLabel;
+      }) || [];
 
   const activeTopicData =
     activeTopic !== "ALL"
