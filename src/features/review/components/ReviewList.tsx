@@ -14,6 +14,8 @@ export function ReviewList({ reviews }: ReviewListProps) {
   const {
     activeTopic,
     setActiveTopic,
+    activeLabel,
+    setActiveLabel,
     searchQuery,
     setSearchQuery,
     filteredReviews,
@@ -27,6 +29,8 @@ export function ReviewList({ reviews }: ReviewListProps) {
         onSearchChange={setSearchQuery}
         activeTopic={activeTopic}
         onTopicChange={setActiveTopic}
+        activeLabel={activeLabel}
+        onLabelChange={setActiveLabel}
         resultCount={filteredReviews.length}
       />
 
@@ -42,6 +46,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
               key={review.id}
               review={review}
               activeTopic={activeTopic}
+              activeLabel={activeLabel}
               searchQuery={searchQuery}
             />
           ))

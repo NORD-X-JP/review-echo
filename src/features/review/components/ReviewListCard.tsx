@@ -1,10 +1,11 @@
 "use client";
 
-import { Review, TopicType } from "@/features/review/domain/types";
+import { Review, ReviewLabel, TopicType } from "@/features/review/domain/types";
 
 interface ReviewListCardProps {
   review: Review;
   activeTopic: TopicType | "ALL";
+  activeLabel: ReviewLabel | "ALL";
   searchQuery: string;
 }
 
@@ -38,15 +39,24 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
 export function ReviewListCard({
   review,
   activeTopic,
+  activeLabel,
   searchQuery,
 }: ReviewListCardProps) {
+  // 現在選択されている条件（トピック＆感情）に合致する「すべてのトピック評価」を抽出する
+  const matchingTopics =
+    review.topics?.filter((t) => {
+      const matchTopic = activeTopic === "ALL" || t.topic === activeTopic;
+      const matchLabel = activeLabel === "ALL" || t.label === activeLabel;
+      return matchTopic && matchLabel;
+    }) || [];
+
   const activeTopicData =
-    activeTopic === "ALL"
-      ? null
-      : review.topics?.find((t) => t.topic === activeTopic);
-  const highlightIds = activeTopicData
-    ? activeTopicData.evidenceSequenceNums
-    : [];
+    activeTopic !== "ALL"
+      ? review.topics?.find((t) => t.topic === activeTopic)
+      : null;
+
+  // 抽出したトピックの根拠文(evidenceSequenceNums)を平坦化（フラットな配列）にする
+  const highlightIds = matchingTopics.flatMap((t) => t.evidenceSequenceNums);
   const hasTranslation = review.sentences.some((s) => s.translatedText);
 
   const formattedDate = new Intl.DateTimeFormat("ja-JP", {
