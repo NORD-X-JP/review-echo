@@ -13,7 +13,7 @@ import {
 
 // APIや画面から受け取る生の口コミデータ（FACT）の型
 export interface RawReviewInput {
-  hotelId: string;
+  organizationId: string;
   sourceReviewId: string;
   reviewUrl: string | null;
   overallRating: number;
@@ -68,7 +68,7 @@ export async function processReviewUseCase(
   // 完全な集約ルート (Review) の構築
   const reviewDomainModel: Review = {
     id: crypto.randomUUID(), // システム内部IDを生成
-    hotelId: input.hotelId,
+    organizationId: input.organizationId,
     sourceReviewId: input.sourceReviewId,
     reviewUrl: input.reviewUrl,
     overallRating: input.overallRating,
