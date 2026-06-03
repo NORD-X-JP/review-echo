@@ -53,7 +53,9 @@ export const ReviewAnalysisOutputSchema = z.object({
   // 属性推論
   nationality: z.object({
     value: z
-      .enum(NATIONALITY_CODES as unknown as [NationalityCode, ...NationalityCode[]])
+      .enum(
+        NATIONALITY_CODES as unknown as [NationalityCode, ...NationalityCode[]],
+      )
       .describe(
         "口コミ本文から推定される投稿者の国籍。ISO 3166-1 alpha-2コード（JP, KR, CN など）または UNKNOWN を返す。",
       ),
