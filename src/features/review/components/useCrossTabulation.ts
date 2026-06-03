@@ -97,7 +97,9 @@ export function useCrossTabulation(reviews: Review[]) {
     const counts: Record<string, Record<ReviewLabel, number>> = {};
     reviews.forEach((review) => {
       if (review.analysis) {
-        const nat = getNationalityDisplayName(review.analysis.nationality.value);
+        const nat = getNationalityDisplayName(
+          review.analysis.nationality.value,
+        );
         const label = review.analysis.overallLabel.value;
         if (!counts[nat]) {
           counts[nat] = {
