@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Review, TopicType, ReviewLabel } from "@/features/review/domain/types";
 import { TOPIC_LABELS, ExtendedLabel } from "./cross-tabulation-config";
+import { getNationalityDisplayName } from "@/features/review/domain/nationality";
 
 export function useCrossTabulation(reviews: Review[]) {
   // --- 1. トピック別 感情分布 ---
@@ -96,8 +97,7 @@ export function useCrossTabulation(reviews: Review[]) {
     const counts: Record<string, Record<ReviewLabel, number>> = {};
     reviews.forEach((review) => {
       if (review.analysis) {
-        let nat = review.analysis.nationality.value.trim().toUpperCase();
-        if (nat === "UNKNOWN") nat = "不明";
+        const nat = getNationalityDisplayName(review.analysis.nationality.value);
         const label = review.analysis.overallLabel.value;
         if (!counts[nat]) {
           counts[nat] = {
