@@ -8,10 +8,11 @@ export default function TestPage() {
 
   async function handleSubmit(formData: FormData) {
     const text = formData.get("reviewText") as string;
+    const postedAt = formData.get("postedAt") as string | null;
 
     // Server Actionを呼び出す
     startTransition(async () => {
-      const result = await submitTestReviewAction(text);
+      const result = await submitTestReviewAction(text, postedAt ?? undefined);
 
       // Result型に基づく安全なエラーハンドリング
       if (result.success) {
@@ -32,6 +33,17 @@ export default function TestPage() {
           className="border border-gray-300 p-2 rounded w-full text-black"
           defaultValue="The room was beautiful but the breakfast was terrible. また、フロントのスタッフの対応はとても良かったです。"
         />
+        <div className="flex flex-col gap-1">
+          <label htmlFor="postedAt" className="text-sm text-gray-600">
+            投稿日時（省略時は現在時刻）
+          </label>
+          <input
+            type="datetime-local"
+            id="postedAt"
+            name="postedAt"
+            className="border border-gray-300 p-2 rounded w-full text-black"
+          />
+        </div>
         <button
           type="submit"
           disabled={isPending}

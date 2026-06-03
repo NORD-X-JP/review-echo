@@ -12,6 +12,7 @@ import {
  */
 export async function submitTestReviewAction(
   text: string,
+  postedAt?: string,
 ): Promise<Result<string>> {
   // 1. 入力値のバリデーション
   if (!text || text.trim() === "") {
@@ -32,7 +33,7 @@ export async function submitTestReviewAction(
       sourceReviewId: `test-${Date.now()}`,
       reviewUrl: "https://example.com/review",
       overallRating: 3,
-      postedAt: new Date(),
+      postedAt: postedAt ? new Date(postedAt) : new Date(),
       reviewerName: "テスト太郎",
       sourceUserId: "user-123",
       avatarUrl: null,
