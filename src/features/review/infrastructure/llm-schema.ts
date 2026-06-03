@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NATIONALITY_CODES } from "../domain/nationality";
+import { NATIONALITY_CODES, type NationalityCode } from "../domain/nationality";
 
 // --- LLM Call 1: 前処理（分割・翻訳）用スキーマ ---
 export const PreprocessOutputSchema = z.object({
@@ -53,7 +53,7 @@ export const ReviewAnalysisOutputSchema = z.object({
   // 属性推論
   nationality: z.object({
     value: z
-      .enum(NATIONALITY_CODES as unknown as [string, ...string[]])
+      .enum(NATIONALITY_CODES as unknown as [NationalityCode, ...NationalityCode[]])
       .describe(
         "口コミ本文から推定される投稿者の国籍。ISO 3166-1 alpha-2コード（JP, KR, CN など）または UNKNOWN を返す。",
       ),
