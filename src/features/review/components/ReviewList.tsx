@@ -35,7 +35,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
       />
 
       {/* リスト描画 */}
-      <div className="space-y-6">
+      <div className="divide-y divide-gray-400">
         {filteredReviews.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             条件に一致する口コミが見つかりませんでした。

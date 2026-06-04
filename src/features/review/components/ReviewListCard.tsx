@@ -69,7 +69,7 @@ export function ReviewListCard({
   }).format(new Date(review.postedAt));
 
   return (
-    <article className="border border-gray-100 rounded-lg p-5 bg-gray-50/50">
+    <article className="py-5">
       <div className="flex justify-between items-start mb-3">
         <div>
           <div className="flex items-center gap-5">
