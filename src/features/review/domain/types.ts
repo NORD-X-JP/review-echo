@@ -57,7 +57,7 @@ export interface ReviewAnalysis {
 export interface Review {
   // Fact (事実データ)
   readonly id: string; // システム内部ID
-  readonly hotelId: string;
+  readonly organizationId: string;
   readonly sourceReviewId: string; // 重複排除用
   readonly reviewUrl: string | null;
   readonly overallRating: number;

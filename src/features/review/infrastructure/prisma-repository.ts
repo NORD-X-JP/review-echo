@@ -58,10 +58,10 @@ export async function saveReview(review: Review): Promise<void> {
 
   // 4. データベースへの UPSERT 実行
   await prisma.review.upsert({
-    // 【検索条件】宿泊事業者ID と 口コミID の複合キーで既存レコードを探す
+    // 【検索条件】組織ID と 口コミID の複合キーで既存レコードを探す
     where: {
-      userId_sourceReviewId: {
-        userId: review.hotelId,
+      organizationId_sourceReviewId: {
+        organizationId: review.organizationId,
         sourceReviewId: review.sourceReviewId,
       },
     },
@@ -102,7 +102,7 @@ export async function saveReview(review: Review): Promise<void> {
 
     // 【新規作成処理】口コミがDBに存在しない場合のINSERTロジック
     create: {
-      userId: review.hotelId,
+      organizationId: review.organizationId,
       sourceReviewId: review.sourceReviewId,
       reviewUrl: review.reviewUrl,
       overallRating: review.overallRating,

@@ -1,4 +1,4 @@
-import { findReviewsWithDetailsByHotelId } from "../infrastructure/query-repository";
+import { findReviewsByOrganizationId } from "../infrastructure/query-repository";
 import {
   Review,
   ReviewAnalysis,
@@ -19,7 +19,7 @@ export type DateRangeOption = "all" | "7days" | "30days" | "90days";
  * ダッシュボード表示用の口コミデータを取得し、ドメインモデルに変換して返す
  */
 export async function fetchDashboardDataUseCase(
-  hotelId: string,
+  organizationId: string,
   rangeOption: DateRangeOption = "all", // デフォルトは全期間
 ): Promise<Review[]> {
   // 1. 文字列のオプションから、具体的な日付（startDate）を計算する
@@ -39,7 +39,10 @@ export async function fetchDashboardDataUseCase(
   }
 
   // 2. 計算した日付を使ってインフラ層からデータを取得
-  const rawReviews = await findReviewsWithDetailsByHotelId(hotelId, startDate);
+  const rawReviews = await findReviewsByOrganizationId(
+    organizationId,
+    startDate,
+  );
 
   // 3. DBの型からドメインモデルの型へマッピング
   return rawReviews.map((raw): Review => {
@@ -96,7 +99,7 @@ export async function fetchDashboardDataUseCase(
     // --- D. 最終的な集約ルート (Review) の構築 ---
     return {
       id: raw.id,
-      hotelId: raw.userId,
+      organizationId: raw.organizationId,
       sourceReviewId: raw.sourceReviewId,
       reviewUrl: raw.reviewUrl,
       overallRating: raw.overallRating,

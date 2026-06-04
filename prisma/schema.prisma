@@ -44,101 +44,123 @@ enum TopicType {
   OTHER
 }
 
-// --- Models ---
-
-// 1. 宿泊事業者（システムユーザー/テナント）
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String   @map("hotel_name")
-  createdAt DateTime @default(now())
-
-  reviews   Review[]
+enum Role {
+  OWNER
+  MEMBER
 }
 
-// 2. 口コミの事実データ (Aggregate Root)
-model Review {
-  id             String   @id @default(uuid())
+// --- Models ---
+
+// 1. 組織（クライアント・ワークスペース単位のデータ所有者）
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  members OrganizationMember[]
+  reviews Review[]
+}
+
+// 2. ログインユーザー（Clerk の userId を id として使用）
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String?  @map("hotel_name")
+  createdAt DateTime @default(now())
+
+  memberships OrganizationMember[]
+}
+
+// 3. 組織とユーザーの中間テーブル（メンバーシップ・権限管理）
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
   userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  role           Role     @default(MEMBER)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+}
+
+// 4. 口コミの事実データ (Aggregate Root)
+model Review {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   reviewUrl      String?
   overallRating  Int
   postedAt       DateTime
-  
-  // --- 重複排除用のカラム（追加） ---
-  // Googleなどの一意なID。ない場合はハッシュ値を格納。
+
   sourceReviewId String
-  
-  // --- 投稿者情報（avatarUrlを追加） ---
   reviewerName   String
-  sourceUserId   String?  
-  avatarUrl      String?  
-  
-  createdAt      DateTime @default(now())
+  sourceUserId   String?
+  avatarUrl      String?
 
-  // リレーション
-  sentences      Sentence[]
-  analysis       ReviewAnalysis? 
-  topics         TopicEvaluation[]
+  createdAt DateTime @default(now())
 
-  // 同じホテルに対して、同じ口コミIDが重複して登録されないようにする複合ユニーク制約
-  @@unique([userId, sourceReviewId])
+  sentences Sentence[]
+  analysis  ReviewAnalysis?
+  topics    TopicEvaluation[]
+
+  @@unique([organizationId, sourceReviewId])
 }
 
-// 3. 分割された文 (Tokenized Sentences)
+// 5. 分割された文 (Tokenized Sentences)
 model Sentence {
-  id             String  @id @default(uuid())
-  reviewId       String
-  review         Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  
-  sequenceNum    Int     // 0, 1, 2...
+  id       String @id @default(uuid())
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  sequenceNum    Int
   originalText   String
   translatedText String?
 
-  @@unique([reviewId, sequenceNum]) 
+  @@unique([reviewId, sequenceNum])
 }
 
-// 4. LLMによる推論・属性データ (1対1)
+// 6. LLMによる推論・属性データ (1対1)
 model ReviewAnalysis {
-  id                  String     @id @default(uuid())
-  reviewId            String     @unique
-  review              Review     @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  id       String @id @default(uuid())
+  reviewId String @unique
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
-  primaryLanguage     String
-  secondaryLanguages  String[]
+  primaryLanguage    String
+  secondaryLanguages String[]
 
-  nationalityValue    String
-  nationalityProv     Provenance
-  nationalityConf     Float?
-  nationalityReason   String?
+  nationalityValue  String
+  nationalityProv   Provenance
+  nationalityConf   Float?
+  nationalityReason String?
 
-  genderValue         Gender
-  genderProv          Provenance
-  genderConf          Float?
-  genderReason        String?
+  genderValue  Gender
+  genderProv   Provenance
+  genderConf   Float?
+  genderReason String?
 
-  companionValue      CompanionType
-  companionProv       Provenance
-  companionConf       Float?
-  companionReason     String?
+  companionValue  CompanionType
+  companionProv   Provenance
+  companionConf   Float?
+  companionReason String?
 
-  overallLabelValue   ReviewLabel
-  overallLabelProv    Provenance
-  overallLabelConf    Float?
-  overallLabelReason  String?
+  overallLabelValue  ReviewLabel
+  overallLabelProv   Provenance
+  overallLabelConf   Float?
+  overallLabelReason String?
 }
 
-// 5. トピックごとのアスペクト分析 (1対多)
+// 7. トピックごとのアスペクト分析 (1対多)
 model TopicEvaluation {
-  id                   String      @id @default(uuid())
-  reviewId             String
-  review               Review      @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  id       String @id @default(uuid())
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
-  topic                TopicType
-  label                ReviewLabel
-  rating               Int         // 1~5
-  
-  // 該当するSentenceのsequenceNumの配列
-  evidenceSequenceNums Int[]       
+  topic  TopicType
+  label  ReviewLabel
+  rating Int
+
+  evidenceSequenceNums Int[]
 }
