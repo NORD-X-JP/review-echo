@@ -51,7 +51,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900">
               口コミ分析ダッシュボード
             </h1>
             <p className="text-gray-500 mt-2">
